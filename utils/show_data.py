@@ -1,10 +1,18 @@
+import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 from config import DATA_FOLDER_PATH, TOPICS
 import re
 
-def trend_bar_graph(amount_dict_hebrew, date, place):
+def trend_bar_graph(amount_dict_hebrew: dict, date: datetime.date, place: str/int):
+    """
+    :param amount_dict_hebrew: trend-volume dict
+    :param date: date of trends fetch
+    :param place: name(string) or woeid
+    :return: path to graph ready
+    """
     labels = [word[::-1] if not word.replace("#",'')[1].isalpha() else word for word in amount_dict_hebrew.keys()]
     sizes = list(amount_dict_hebrew.values())
     print(amount_dict_hebrew)
@@ -21,7 +29,12 @@ def trend_bar_graph(amount_dict_hebrew, date, place):
     return path
 
 
-def bar_graph(amount_dict, title):
+def tweets_speed_bar_graph(amount_dict: dict, title: str) -> None:
+    """
+    :param amount_dict: word-tweet_speed dict
+    :param title: title for graph
+    :return: show graph
+    """
     labels = [TOPICS[word][::-1] for word in amount_dict.keys()]
     sizes = list(amount_dict.values())
     y_pos = np.arange(len(labels))
