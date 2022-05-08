@@ -87,16 +87,19 @@ def fetch_trending(word_list: list, place_woeid: int) -> None:
         trend_name_clean = trend['name'].replace('#', '')
         if trend['tweet_volume'] != None:
             trendict[trend['name']] = trend['tweet_volume']
+        else:
+            # we multiply by 24 because other values in dictionary are tweet/day and this value is tweet/hour
+            trendict[trend['name']] = get_tweet_speed(trend_name_clean, is_hashtag=(trend_name_clean != trend['name']))*24
         for word in word_list:
             if word in trend_name_clean or trend_name_clean in word:
                 text = f"ALERT: \n {TOPICS[word]} is trending in {place_woeid} as '{trend['name']}' in volume of {trend['tweet_volume']}" \
                        f"the last 24 hours (check time is {res['as_of']})"
-                send_message(to="me", text=text)
+                send_message(to="me", text="Good morning, here are the trends for today:")
     graph_path = trend_bar_graph(trendict, place={place_woeid}, date=res['as_of'])
     send_file(to="me", path=graph_path)
 
 
-def get_tweet_speed(word: str) -> float:
+def get_tweet_speed(word: str, is_hashtag: bool = False) -> float:
     """
     Description:
         we can only fetch 100 tweets so we check the time delta between now and the oldest tweet (from the
@@ -104,7 +107,7 @@ def get_tweet_speed(word: str) -> float:
     :param word: word to search tweet speed for
     :return: float of average tweet speed (tweets/hour) in moment of search
     """
-    url = all_tweets_contain_word_url(search_word=word, limit=100, is_hashtag=False)
+    url = all_tweets_contain_word_url(search_word=word, limit=100, is_hashtag=is_hashtag)
     json_response = connect_to_endpoint(url)
     tweets = json_response['statuses']
     tweets_amount = len(tweets)
