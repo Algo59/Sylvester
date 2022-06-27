@@ -2,11 +2,11 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from config import DATA_FOLDER_PATH, TOPICS
-import re
+from twit.config import DATA_FOLDER_PATH, TOPICS
 import seaborn
+import streamlit as st
 
-def trend_bar_graph(amount_dict_hebrew: dict, date: datetime.date, place: str):
+def trend_bar_graph(amount_dict_hebrew: dict, word):
     """
     :param amount_dict_hebrew: trend-volume dict
     :param date: date of trends fetch
@@ -16,14 +16,23 @@ def trend_bar_graph(amount_dict_hebrew: dict, date: datetime.date, place: str):
     labels = []
     sizes = []
     tup = amount_dict_hebrew.items()
+    counter, nums_to_bold = 0, None
     for key, value in sorted(tup, key= lambda x: x[1])[-23:]:
-        labels.append(key[::-1] if not key.replace("#",'')[1].isalpha() else key)
+        if word in key:
+            labels.append(key)
+            nums_to_bold = counter
+        else:
+            labels.append(key[::-1] if key.upper() == key else key)
         sizes.append(value/24)
+        counter += 1
     print(amount_dict_hebrew)
     y_pos = np.arange(len(labels))
+    fig, ax = plt.subplots()
     plt.barh(y_pos, sizes, align='center', alpha=0.5, color=seaborn.color_palette("rocket"))
     plt.yticks(y_pos, labels)
     plt.xticks(size=10)
+    if nums_to_bold:
+        ax.get_yticklabels()[nums_to_bold].set_color("red")
     plt.yticks(size=10)
     plt.xlabel("average tweets/hour speed")
     now = datetime.now().strftime('%d-%m-%y_%H:%M')
@@ -31,6 +40,7 @@ def trend_bar_graph(amount_dict_hebrew: dict, date: datetime.date, place: str):
     graph_name = f"Trends_in_Lebanon_{now}.png"
     path = os.path.join(DATA_FOLDER_PATH, graph_name)
     plt.savefig(path, bbox_inches='tight', pad_inches=0.3)
+    st.pyplot(fig=plt.gcf())
     return path
 
 
@@ -57,3 +67,7 @@ def tweets_speed_bar_graph(amount_dict: dict) -> None:
     path = os.path.join(DATA_FOLDER_PATH, graph_name)
     plt.savefig(path, bbox_inches='tight', pad_inches=0.3)
     return path
+
+
+
+

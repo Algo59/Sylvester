@@ -1,0 +1,12 @@
+from telethon.sync import TelegramClient
+from twit.config import *
+
+
+def send_message(to, text):
+    with TelegramClient("algo59", API_ID, API_HASH) as client:
+        client.send_message(to, text)
+
+
+def send_file(to, path):
+    with TelegramClient("algo59", API_ID, API_HASH) as client:
+        client.send_file(to, path)

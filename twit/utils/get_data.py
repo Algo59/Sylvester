@@ -1,14 +1,9 @@
 import requests
-import os
 import json
-from pprint import pprint
-from config.get_data import *
-from datetime import datetime
-from datetime import datetime, timezone
+from twit.config.get_data import *
 from dateutil import parser
-from .send_to_telegram import *
 from .show_data import *
-
+happened = False
 
 def all_tweets_contain_word_url(search_word: str, limit: int, is_hashtag:bool =False) -> str:
     """
@@ -16,7 +11,7 @@ def all_tweets_contain_word_url(search_word: str, limit: int, is_hashtag:bool =F
     :param limit: number of tweets
     :param since_id: id of tweet to fetch from its date
     :param is_hashtag: search string as hashtag
-    :return: returns url to searh for tweets containing the string
+    :return: returns url to search for tweets containing the string
     """
     if is_hashtag:
         q = f"%23{search_word}"
@@ -73,12 +68,12 @@ def print_tweets(json_response: dict):
         print(f"text = {tweet['text']} \n\n")
 
 
-def fetch_trending(word_list: list, place_woeid: int) -> None:
+def fetch_trending(word_list: list, place_woeid: int, word: str) -> None:
     """
     check if one of the words in wordlist is trending in place
     :param word_list: list of suspicios words
     :param place_woeid: get from web the place woeid
-    :return: none but sends to me in telegram the trending graph and alert if one of the words is trending
+    :return: none but sends to me in telegrab_project the trending graph and alert if one of the words is trending
     """
     url = trends_in_place_url(place_woeid)
     res = connect_to_endpoint(url)[0]
@@ -90,13 +85,13 @@ def fetch_trending(word_list: list, place_woeid: int) -> None:
         else:
             # we multiply by 24 because other values in dictionary are tweet/day and this value is tweet/hour
             trendict[trend['name']] = get_tweet_speed(trend_name_clean, is_hashtag=(trend_name_clean != trend['name']))*24
-        for word in word_list:
-            if word in trend_name_clean or trend_name_clean in word:
-                text = f"ALERT: \n {TOPICS[word]} is trending in {place_woeid} as '{trend['name']}' in volume of {trend['tweet_volume']}" \
-                       f"the last 24 hours (check time is {res['as_of']})"
-                send_message(to="me", text="Good morning, here are the trends for today:")
-    graph_path = trend_bar_graph(trendict, place={place_woeid}, date=res['as_of'])
-    send_file(to="me", path=graph_path)
+        # for word in word_list:
+        #     if word in trend_name_clean or trend_name_clean in word:
+        #         text = f"ALERT: \n {TOPICS[word]} is trending in {place_woeid} as '{trend['name']}' in volume of {trend['tweet_volume']}" \
+        #                f"the last 24 hours (check time is {res['as_of']})"
+        #         # send_message(to="me", text="Good morning, here are the trends for today:")
+    graph_path = trend_bar_graph(trendict, word=word)
+    # send_file(to="me", path=graph_path)
 
 
 def get_tweet_speed(word: str, is_hashtag: bool = False) -> float:
@@ -116,9 +111,10 @@ def get_tweet_speed(word: str, is_hashtag: bool = False) -> float:
         date = parser.parse(tweet['created_at'])
         date_list.append(date)
     date_list = sorted(date_list)
-    if len(date_list) > 0:
+    if len(date_list) > 1:
         oldest_date = date_list[0]
-        td = datetime.now(timezone.utc) - oldest_date
+        newest_date = date_list[-1]
+        td = newest_date - oldest_date
         #todo check sec amount if true
         speed = tweets_amount / (td.total_seconds()/60/60)
         return speed

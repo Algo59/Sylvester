@@ -1,5 +1,5 @@
-from utils import *
-from config import *
+from twit.utils import *
+from twit.config import *
 
 def main():
     fetch_trending(WORD_LIST, LEBANON_WOEID)

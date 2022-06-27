@@ -1,7 +1,7 @@
 from telethon.sync import TelegramClient
 from datetime import datetime, timedelta
 import re
-from config import *
+from telegrab_project.telegram.config import *
 
 
 def send_message(to, text):
