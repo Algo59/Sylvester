@@ -43,14 +43,17 @@ def spline(x_values: list, y_values: list):
     y_smooth = spl(x_smooth)
     return x_smooth, y_smooth
 
-def week_plot(word_date_amount_dict: dict, graph_name: str="my_graph.png"):
+def week_plot(word_date_amount_dict: dict):
+    wdad_trans = {TOPICS.get(key, key): word_date_amount_dict.get(key, "error") for key in word_date_amount_dict}
+    date = datetime.now().strftime("%d-%m-%Y")
+    graph_name = f"{DAYS}_days_back_from_{date}.png"
     fig, ax = plt.subplots()  # Create a figure and an axes.
     final_amounts_list = []
     index = 0
-    for word in word_date_amount_dict.keys():
-        amount_used_sum = sum(word_date_amount_dict[word].values())
-        if amount_used_sum > 0:
-            x_values, y_values = word_date_amount_dict[word].keys(), word_date_amount_dict[word].values()
+    for word in wdad_trans.keys():
+        amount_used_sum = sum(wdad_trans[word].values())
+        if amount_used_sum > 0: #remove words we did not use
+            x_values, y_values = wdad_trans[word].keys(), wdad_trans[word].values()
             x_smooth, y_smooth = spline(x_values, y_values)
             ax.plot(x_smooth, y_smooth, label=str(word)[::-1],linewidth=3)
             plt.xticks(np.arange(len(x_values)), x_values, size=18, rotation=30)
@@ -59,7 +62,7 @@ def week_plot(word_date_amount_dict: dict, graph_name: str="my_graph.png"):
             index += 1
     ax.set_ylabel('מופעים'[::-1], size=30) # Add a y-label to the axes.
     ax.set_xlabel('תאריך'[::-1], size=30)
-    ax.set_title("הופעות מילים בלבנון"[::-1], size=40)
+    ax.set_title(date + f"הופעות מילים בשבוע האחרון בלבנון תאריך-"[::-1], size=40)
     # plt.xticks(rotation=30)
     handles, labels = plt.gca().get_legend_handles_labels() # get handles and labels
     order = [element[0] for element in sorted(final_amounts_list, key=lambda tup: tup[1])][::-1] # specify order of items in legend

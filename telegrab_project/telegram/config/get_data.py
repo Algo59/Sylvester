@@ -5,6 +5,7 @@ PHONE_NUM = +972508661382
 HOURS = 0
 DAYS = 7
 CHANNELS = ["https://t.me/Lebanon_24", "https://t.me/lbworldnews"]
+PATH_TO_ALL_MESSAGES = "/Users/algocto/PycharmProjects/sylvester/telegram_data/all_telegram_messages.json"
 TOPICS = {
     "حزب الله" : "חזבאלה" ,
     "انتخابات" : "בחירות" ,
@@ -21,4 +22,4 @@ COMBINATIONS = [("الطيران الإسراأيلي", "العدو الإسرا
                 ("حزب الله", "العدو الصهيوني"), ("تركيب سياج", "تصعيد"), ("العدو الإسراأيلي", "تركيب سياج"),
                 ("حزب الله", "تصعيد"), ("حزب الله", "جنوب لبنان"), ("الطيران الإسراأيلي", "انفجار"),
                 ("تركيب سياج", "حدود")]
-WORD_LIST = TOPICS.keys()
+WORD_LIST = list(TOPICS.keys())

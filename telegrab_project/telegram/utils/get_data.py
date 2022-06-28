@@ -6,32 +6,53 @@ from telegrab_project.telegram.config import *
 import json
 
 
-def count_words_in_messages() -> dict:
+
+
+def save_all_messages():
     """
     Description:
-        iterate through all messages in all channels wanted, and search for occurrences of word in WORDS_LIST
-        then create dictionary where keys are words from word list and values are dictionaries where keys are dates and
-        values are amount of occurrences:
-        example:
-            {"hizbala" : {"12/4" : 5, "13/4" :3}}
-
-    :return: word_date_amount dictionary
+        save all messages from all channels in last wanted time to a dictionary in wanted path
     """
-    word_date_amount_dict = {}
+    all_messages = {}
     with TelegramClient("algo59", API_ID, API_HASH) as client:
         for channel in CHANNELS:
+            index = 0
             for message in client.iter_messages(channel, offset_date=datetime.now() - timedelta(hours=HOURS, days=DAYS), reverse=True):
                 if message.text:
-                    for word in WORD_LIST:
-                        count = len(re.findall(word, message.text))
-                        date = message.date.strftime("%d/%m")
-                        if word in word_date_amount_dict.keys():
-                            if date in word_date_amount_dict[word].keys():
-                                word_date_amount_dict[word][date] = word_date_amount_dict[word][date] + count
-                            else:
-                                word_date_amount_dict[word][date] = count
-                        else:
-                            word_date_amount_dict[word] = {date: count}
+                    date = message.date.strftime("%d/%m")
+                    text = message.text
+                    all_messages[index] = {"text" : text, "date" : date}
+                    index += 1
+
+    with open(PATH_TO_ALL_MESSAGES, "w", encoding="utf-8") as all_messages_file:
+        json.dump(all_messages, all_messages_file, indent=4, ensure_ascii=False)
+
+
+
+def count_words_in_messages(all_messages_dict):
+    """
+        Description:
+            iterate through all messages in all channels wanted, and search for occurrences of word in WORDS_LIST
+            then create dictionary where keys are words from word list and values are dictionaries where keys are dates and
+            values are amount of occurrences:
+            example:
+                {"hizbala" : {"12/4" : 5, "13/4" :3}}
+
+        :return: word_date_amount dictionary
+        """
+    word_date_amount_dict = {}
+    for i in all_messages_dict:
+        text = all_messages_dict[i]["text"]
+        date = all_messages_dict[i]["date"]
+        for word in WORD_LIST:
+            count = len(re.findall(word, text))
+            if word in word_date_amount_dict.keys():
+                if date in word_date_amount_dict[word].keys():
+                    word_date_amount_dict[word][date] = word_date_amount_dict[word][date] + count
+                else:
+                    word_date_amount_dict[word][date] = count
+            else:
+                word_date_amount_dict[word] = {date: count}
     return word_date_amount_dict
 
 

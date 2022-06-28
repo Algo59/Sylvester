@@ -4,14 +4,13 @@ from twit.config import *
 import streamlit as st
 import random
 import string
-# from telegrab_project import tele_main
+from telegrab_project import PATH_TO_ALL_MESSAGES, count_words_in_messages, week_plot, WORD_LIST
 
 
 
 def add_new_row():
     key = random.choice(string.ascii_uppercase) + str(random.randint(0, 999999))
-    st.text_input("channel link:",
-                  key=key)
+    st.text_input("channel link:", key=key)
     return key
 
 
@@ -20,15 +19,21 @@ def main():
         st.text_input("your_word", key="search_word")
     button = st.button("do")
     if button:
-        fetch_trending(WORD_LIST, place_woeid=LEBANON_WOEID, word=st.session_state.search_word)
-        volume_list = []
         word = st.session_state.search_word
+        WORD_LIST.append(word)
+        fetch_trending(WORD_LIST, place_woeid=LEBANON_WOEID, word=word)
+        volume_list = []
+        with open(PATH_TO_ALL_MESSAGES, "r", encoding="utf-8") as dict_file:
+            all_messages_dict = json.load(dict_file)
+            word_date_amount_dict = count_words_in_messages(all_messages_dict)
+            week_plot(word_date_amount_dict)
         with st.empty():
             for second in range(40):
                 volume = get_tweet_speed(word)
                 volume_list.append(volume)
                 st.line_chart(data=volume_list, width=0, height=0, use_container_width=True)
                 time.sleep(0.5)
+
     if 'count' not in st.session_state:
         st.session_state.count = 0
     key_list = []
@@ -50,5 +55,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
