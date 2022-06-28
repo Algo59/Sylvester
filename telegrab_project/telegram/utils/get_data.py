@@ -2,6 +2,8 @@ from telethon.sync import TelegramClient
 from datetime import datetime, timedelta
 import re
 from telethon.tl.functions.messages import GetHistoryRequest
+
+from common import WORD_LIST
 from telegrab_project.telegram.config import *
 import json
 

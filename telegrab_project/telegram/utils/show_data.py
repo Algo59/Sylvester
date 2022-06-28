@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
+from common import TOPICS
 from telegrab_project.telegram.config import *
 import os
 from scipy.interpolate import make_interp_spline, BSpline

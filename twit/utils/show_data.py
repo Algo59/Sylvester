@@ -2,7 +2,9 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from twit.config import DATA_FOLDER_PATH, TOPICS
+
+from common import TOPICS
+from twit.config import DATA_FOLDER_PATH
 import seaborn
 import streamlit as st
 
