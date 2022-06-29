@@ -50,10 +50,10 @@ def week_plot(word_date_amount_dict: dict):
     date = datetime.now().strftime("%d-%m-%Y")
     graph_name = f"{DAYS}_days_back_from_{date}.png"
     fig, ax = plt.subplots()  # Create a figure and an axes.
-    final_amounts_list = []
+    final_amounts_list = [] # list of tuples contain index and overall use sum example: (0, 32) (used for later sortby size
     index = 0
     for word in wdad_trans.keys():
-        amount_used_sum = sum(wdad_trans[word].values())
+        amount_used_sum = sum(wdad_trans[word].values()) # sum all uses of word from all dates
         if amount_used_sum > 0: #remove words we did not use
             x_values, y_values = wdad_trans[word].keys(), wdad_trans[word].values()
             x_smooth, y_smooth = spline(x_values, y_values)

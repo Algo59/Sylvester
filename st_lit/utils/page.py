@@ -4,7 +4,8 @@ import string
 import time
 import streamlit as st
 from common import *
-from telegrab_project import week_plot, count_words_in_messages, PATH_TO_ALL_MESSAGES, CHANNELS
+from telegrab_project import week_plot, count_words_in_messages, PATH_TO_ALL_MESSAGES, CHANNELS, get_messages, \
+    add_channel, get_channels_list, reset_channels
 from twit import fetch_trending, LEBANON_WOEID, get_tweet_speed
 
 
@@ -24,9 +25,6 @@ def sidebar_select():
             ("Telegram", "Twitter", "Facebook", "TikTok")
         )
         return selection1
-
-
-
 
 
 
@@ -54,29 +52,31 @@ def twitter_word_pace():
 
 def telegram_graph():
     word = st.session_state.search_word
-    WORD_LIST.append(word)
-    with open(PATH_TO_ALL_MESSAGES, "r", encoding="utf-8") as dict_file:
-        all_messages_dict = json.load(dict_file)
-        word_date_amount_dict = count_words_in_messages(all_messages_dict)
-        week_plot(word_date_amount_dict)
-
-
+    if word:
+        word_list = WORD_LIST + [word]
+        message_dict = get_messages()
+        wdad = count_words_in_messages(message_dict, word_list) #word_date_amount_dict
+        week_plot(wdad)
 
 
 def telegram_channels():
-    st.write("current channels:")
-    st.write(CHANNELS)
     st.text_input("Add channel: ", key="new_channel")
-    add_button = st.button
-    if add_button and st.session_state.new_channel:
-        CHANNELS.append(st.session_state.new_channel)
-        st.session_state.new_channel = ""
+    st.button(label="add_channel", key="add_button")
+    st.button(label="reset_channels", key="reset_channels")
+    st.write("Notice! \n channels wil be added only after running telegram_get_messages.py")
+    if st.session_state.add_button and st.session_state.new_channel:
+        add_channel(st.session_state.new_channel)
+    if st.session_state.reset_channels:
+        reset_channels()
+        pass
+    st.write("current channels:")
+    st.write(" \n".join(["* "+channel for channel in get_channels_list()]))
+
 
 
 
 def full_page():
     config_page()
-    add_word_search()
     selection1 = sidebar_select()
     if selection1 == "Twitter":
         selection2 = st.sidebar.radio(
@@ -88,7 +88,9 @@ def full_page():
             twitter_graph()
         if selection2 == "tweets per hour":
             st.write("tweets per hour graph")
-            twitter_word_pace()
+            add_word_search()
+            if st.session_state.search_word:
+                twitter_word_pace()
 
     elif selection1 == "Telegram":
         selection2 = st.sidebar.radio(
@@ -98,6 +100,7 @@ def full_page():
         if selection2 == "add channels":
             telegram_channels()
         if selection2 == "graph":
+            add_word_search()
             telegram_graph()
 
 
