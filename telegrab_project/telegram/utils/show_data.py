@@ -45,33 +45,40 @@ def spline(x_values: list, y_values: list):
     y_smooth = spl(x_smooth)
     return x_smooth, y_smooth
 
-def week_plot(word_date_amount_dict: dict):
+def telegram_words_plot(word_date_amount_dict: dict):
     wdad_trans = {TOPICS.get(key, key): word_date_amount_dict.get(key, "error") for key in word_date_amount_dict}
-    date = datetime.now().strftime("%d-%m-%Y")
-    graph_name = f"{DAYS}_days_back_from_{date}.png"
+    # date_today = datetime.now().strftime("%d-%m-%Y")
+    # graph_name = f"from_{date_today}.png"
     fig, ax = plt.subplots()  # Create a figure and an axes.
-    final_amounts_list = [] # list of tuples contain index and overall use sum example: (0, 32) (used for later sortby size
+    final_amounts_list = [] # list of tuples contain index and use-amount-of-word example: (0, 32) (used for later sortby size
     index = 0
-    for word in wdad_trans.keys():
+
+    for word in wdad_trans.keys(): #for every word add linegraph
         amount_used_sum = sum(wdad_trans[word].values()) # sum all uses of word from all dates
-        if amount_used_sum > 0: #remove words we did not use
-            x_values, y_values = wdad_trans[word].keys(), wdad_trans[word].values()
-            x_smooth, y_smooth = spline(x_values, y_values)
-            ax.plot(x_smooth, y_smooth, label=str(word)[::-1],linewidth=3)
-            plt.xticks(np.arange(len(x_values)), x_values, size=18, rotation=30)
-            plt.yticks(size=20)
-            final_amounts_list.append((index, amount_used_sum))
-            index += 1
-    ax.set_ylabel('מופעים'[::-1], size=30) # Add a y-label to the axes.
+        # if amount_used_sum > 0: #remove words we did not use
+        x_values, y_values = wdad_trans[word].keys(), wdad_trans[word].values()
+        x_smooth, y_smooth = spline(x_values, y_values)
+        ax.plot(x_smooth, y_smooth, label=str(word)[::-1],linewidth=3)
+        if len(x_values) > 13:
+            x_values = [x if i%2==0 else '' for i, x in enumerate(x_values) ]
+            plt.xticks(np.arange(len(x_values)), x_values, size=18, rotation=30)  # add half of date ticks to add clearness
+        else:
+            plt.xticks(np.arange(len(x_values)), x_values, size=18, rotation=30) #add all date ticks
+        plt.yticks(size=20)
+        final_amounts_list.append((index, amount_used_sum))
+        index += 1
+
+    #set topics
+    ax.set_ylabel('מופעים'[::-1], size=30)
     ax.set_xlabel('תאריך'[::-1], size=30)
-    ax.set_title(date + f"הופעות מילים בשבוע האחרון בלבנון תאריך-"[::-1], size=40)
-    # plt.xticks(rotation=30)
-    handles, labels = plt.gca().get_legend_handles_labels() # get handles and labels
+    ax.set_title(f"הופעות מילים בלבנון לפי תאריך"[::-1], size=40)
+
+    handles, labels = plt.gca().get_legend_handles_labels() # get handles and labels for legend order
     order = [element[0] for element in sorted(final_amounts_list, key=lambda tup: tup[1])][::-1] # specify order of items in legend
     ax.legend([handles[i] for i in order], [labels[i] for i in order], bbox_to_anchor=(1,1), loc="upper left", fontsize=20) # add legend to plot
-    plt.subplots_adjust(right=0.8)
+    plt.subplots_adjust(right=0.8) #move it a little bit
     fig = plt.gcf()
     fig.set_size_inches((15, 10), forward=False)
-    fig.savefig(os.path.join(DATA_FOLDER_PATH, graph_name), dpi=500, bbox_inches='tight', pad_inches=0.1)
+    # fig.savefig(os.path.join(DATA_FOLDER_PATH, graph_name), dpi=500, bbox_inches='tight', pad_inches=0.1)
     st.pyplot(fig)
     

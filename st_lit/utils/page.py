@@ -1,11 +1,12 @@
 import json
 import random
 import string
+from datetime import datetime, timedelta
 import time
 import streamlit as st
 from common import *
-from telegrab_project import week_plot, count_words_in_messages, PATH_TO_ALL_MESSAGES, CHANNELS, get_messages, \
-    add_channel, get_channels_list, reset_channels
+from telegrab_project import telegram_words_plot, count_words_in_messages, PATH_TO_ALL_MESSAGES, CHANNELS, get_messages, \
+    add_channel, get_channels_list, reset_channels, add_word, reset_words, get_tele_word_list
 from twit import fetch_trending, LEBANON_WOEID, get_tweet_speed
 
 
@@ -49,13 +50,10 @@ def twitter_word_pace():
             time.sleep(1)
 
 
-def telegram_graph():
-    word = st.session_state.search_word
-    if word:
-        word_list = WORD_LIST + [word]
-        message_dict = get_messages()
-        wdad = count_words_in_messages(message_dict, word_list) #word_date_amount_dict
-        week_plot(wdad)
+def telegram_graph(word_list, date_range):
+    message_dict = get_messages()
+    wdad = count_words_in_messages(all_messages_dict=message_dict, word_list=word_list, date_range=date_range) #word_date_amount_dict
+    telegram_words_plot(wdad)
 
 
 def telegram_channels():
@@ -67,11 +65,32 @@ def telegram_channels():
         add_channel(st.session_state.new_channel)
     if st.session_state.reset_channels:
         reset_channels()
-        pass
     st.write("current channels:")
     st.write(" \n".join(["* "+channel for channel in get_channels_list()]))
 
 
+def telegram_words():
+    st.text_input("Add word: ", key="new_word")
+    col1, col2= st.columns(2)
+    with col1:
+        st.button(label="add_word", key="add_word_button")
+    with col2:
+        st.button(label="reset telegram words", key="reset_tele_words")
+    if st.session_state.add_word_button and st.session_state.new_word:
+        add_word(st.session_state.new_word)
+    if st.session_state.reset_tele_words:
+        reset_words()
+    st.write("current words:")
+    st.write(" \n".join(["* "+word for word in get_tele_word_list()]))
+
+
+def telegram_dates():
+    st.subheader("Choose Date Range")
+    end_day, start_day = st.select_slider(label ='Days Back From Today', value= (0,7), options=range(31))
+    start_date = datetime.now() - timedelta(days=start_day)
+    end_date = datetime.now() - timedelta(days=end_day)
+    st.subheader(f"{start_date.strftime('%d/%m/%Y')}  -  {end_date.strftime('%d/%m/%Y')}")
+    return [start_date, end_date]
 
 
 def full_page():
@@ -93,8 +112,12 @@ def full_page():
         if selection2 == "add channels":
             telegram_channels()
         if selection2 == "graph":
-            add_word_search()
-            telegram_graph()
+            telegram_words()
+            date_range = telegram_dates()
+            st.button(label="plot graph", key="plot_graph_button")
+            if st.session_state.plot_graph_button:
+                tele_word_list = get_tele_word_list()
+                telegram_graph(word_list=tele_word_list, date_range=date_range)
 
 
     elif selection1 == "Facebook":

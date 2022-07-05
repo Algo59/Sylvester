@@ -2,7 +2,7 @@ from telethon.sync import TelegramClient
 from datetime import datetime, timedelta
 import re
 from telethon.tl.functions.messages import GetHistoryRequest
-from common import WORD_LIST, COMBINATIONS, PATH_TO_CHANNELS
+from common import WORD_LIST, COMBINATIONS, PATH_TO_CHANNELS, PATH_TO_TELE_WORDS
 from telegrab_project.telegram.config import *
 import json
 import pickle
@@ -21,7 +21,7 @@ def save_all_messages(channels):
             try:
                 for message in client.iter_messages(channel, offset_date=datetime.now() - timedelta(hours=HOURS, days=DAYS), reverse=True):
                     if message.text:
-                        date = message.date.strftime("%d/%m")
+                        date = message.date.strftime("%d/%m/%Y")
                         text = message.text
                         all_messages[index] = {"text" : text, "date" : date}
                         index += 1
@@ -41,10 +41,11 @@ def get_messages():
         print("\n\n\n messages file does not exist, create it by running telemain.py \n\n\n")
         return False
 
-def count_words_in_messages(all_messages_dict: dict, word_list: list):
+
+def count_words_in_messages(all_messages_dict: dict, word_list: list, date_range: list):
     """
         Description:
-            iterate through all messages in all channels wanted, and search for occurrences of word in WORDS_LIST
+            iterate through all messages in all channels wanted, in wanted dates, and search for occurrences of word in WORDS_LIST
             then create dictionary where keys are words from word list and values are dictionaries where keys are dates and
             values are amount of occurrences:
             example:
@@ -53,53 +54,24 @@ def count_words_in_messages(all_messages_dict: dict, word_list: list):
         :return: word_date_amount dictionary
         """
     word_date_amount_dict = {}
+    start_date, end_date = date_range[0], date_range[1]
     for i in all_messages_dict:
         text = all_messages_dict[i]["text"]
         date = all_messages_dict[i]["date"]
-        for word in word_list:
-            count = len(re.findall(word, text))
-            if word in word_date_amount_dict.keys():
-                if date in word_date_amount_dict[word].keys():
-                    word_date_amount_dict[word][date] = word_date_amount_dict[word][date] + count
+        real_date = datetime.strptime(date, "%d/%m/%Y")
+        if end_date > real_date > start_date:
+            for word in word_list:
+                count = len(re.findall(word, text))
+                if word in word_date_amount_dict.keys():
+                    if date in word_date_amount_dict[word].keys():
+                        word_date_amount_dict[word][date] = word_date_amount_dict[word][date] + count
+                    else:
+                        word_date_amount_dict[word][date] = count
                 else:
-                    word_date_amount_dict[word][date] = count
-            else:
-                word_date_amount_dict[word] = {date: count}
+                    word_date_amount_dict[word] = {date: count}
     return word_date_amount_dict
 
 
-def count_combinations_in_messages(all_messages_dict) -> dict:
-    """
-       Description:
-           iterate through all messages in all channels wanted, and search for occurrences of combinations in
-           COMBINATION_LIST then create dictionary where keys are combinations from word list and values
-           are dictionaries where keys are dates and
-           values are amount of occurrences:
-           example:
-               {("hizbala", "haslama") : {"12/4" : 5, "13/4" :3}}
-
-       :return: comb_date_amount dictionary
-       """
-    comb_date_amount_dict = {}
-    word_date_amount_dict = {}
-    for i in all_messages_dict:
-        text = all_messages_dict[i]["text"]
-        date = all_messages_dict[i]["date"]
-        for word in WORD_LIST:
-            for comb in COMBINATIONS:
-                for word in comb:
-                    if word not in message.text:
-                        break
-                else:
-                    date = message.date.strftime("%d/%m")
-                    if comb in comb_date_amount_dict.keys():
-                        if date in comb_date_amount_dict[comb].keys():
-                            comb_date_amount_dict[comb][date] = comb_date_amount_dict[comb][date] + 1
-                        else:
-                            comb_date_amount_dict[comb][date] = 1
-                    else:
-                        comb_date_amount_dict[comb] = {date: 1}
-    return comb_date_amount_dict
 
 
 def save_channels_list(channel_list):
@@ -125,3 +97,28 @@ def add_channel(channel):
 
 def reset_channels():
     save_channels_list(CHANNELS)
+
+
+def save_tele_word_list(word_list):
+    with open(PATH_TO_TELE_WORDS, "wb") as f:
+        pickle.dump(word_list, f)
+
+
+
+def get_tele_word_list():
+    try:
+        with open(PATH_TO_TELE_WORDS, "rb") as f:
+            word_list = pickle.load(f)
+            return word_list
+    except FileNotFoundError:
+        return []
+
+
+def add_word(word):
+    word_list = get_tele_word_list()
+    word_list.append(word)
+    save_tele_word_list(word_list)
+
+
+def reset_words():
+    save_tele_word_list([])

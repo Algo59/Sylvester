@@ -18,3 +18,4 @@ COMBINATIONS = [("الطيران الإسراأيلي", "العدو الإسرا
 WORD_LIST = list(TOPICS.keys())
 
 PATH_TO_CHANNELS = "/Users/algocto/PycharmProjects/sylvester/telegrab_project/telegram/config/channels_list.pkl"
+PATH_TO_TELE_WORDS = "/Users/algocto/PycharmProjects/sylvester/telegrab_project/telegram/config/tele_word_list.pkl"
