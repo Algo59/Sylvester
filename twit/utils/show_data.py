@@ -20,7 +20,7 @@ def trend_bar_graph(amount_dict_hebrew: dict, word):
     tup = amount_dict_hebrew.items()
     counter, nums_to_bold = 0, None
     for key, value in sorted(tup, key= lambda x: x[1])[-23:]:
-        if word in key:
+        if word.upper() in key.upper():
             labels.append(key)
             nums_to_bold = counter
         else:

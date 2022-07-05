@@ -13,9 +13,9 @@ def config_page():
     st.set_page_config(
         page_title="prototype dashboard",
         page_icon="🪖",
-        layout="wide",
+        # layout="wide",
     )
-    st.title("Real-Time / Live Data  Dashboard")
+    st.title("Real-Time Data  Dashboard")
 
 
 def sidebar_select():
@@ -29,25 +29,24 @@ def sidebar_select():
 
 
 def add_word_search():
-    if "your_word" not in st.session_state:
-        st.text_input("your_word", key="search_word")
+    st.text_input("your word", key="search_word")
 
 
 def twitter_graph():
     word = st.session_state.search_word
-    WORD_LIST.append(word)
-    fetch_trending(WORD_LIST, place_woeid=LEBANON_WOEID, word=word)
+    word_list = WORD_LIST + [word]
+    fetch_trending(word_list, place_woeid=LEBANON_WOEID, word=word)
 
 
 def twitter_word_pace():
     word = st.session_state.search_word
     volume_list = []
     with st.empty():
-        for second in range(40):
+        while True:
             volume = get_tweet_speed(word)
             volume_list.append(volume)
             st.line_chart(data=volume_list, width=0, height=0, use_container_width=True)
-            time.sleep(3)
+            time.sleep(1)
 
 
 def telegram_graph():
@@ -79,18 +78,12 @@ def full_page():
     config_page()
     selection1 = sidebar_select()
     if selection1 == "Twitter":
-        selection2 = st.sidebar.radio(
-            "Select a graph: ",
-            ("tweets per hour", "most trending hashtags")
-        )
-        if selection2 == "most trending hashtags":
-            st.write("most trending hashtags graph")
-            twitter_graph()
-        if selection2 == "tweets per hour":
-            st.write("tweets per hour graph")
-            add_word_search()
-            if st.session_state.search_word:
-                twitter_word_pace()
+        add_word_search()
+        st.write("most trending hashtags graph")
+        twitter_graph()
+        st.write("tweets per hour graph")
+        if st.session_state.search_word:
+            twitter_word_pace()
 
     elif selection1 == "Telegram":
         selection2 = st.sidebar.radio(
