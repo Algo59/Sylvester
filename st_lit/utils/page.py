@@ -41,7 +41,8 @@ def twitter_graph():
 
 
 def twitter_word_pace(word_list):
-    all_volumes_dict = {word : pd.DataFrame({'volume': [] }) for word in word_list} #dictionary of hour-volume df for every word
+    all_volumes_dict = {word : pd.DataFrame({word: [] }) for word in word_list} #dictionary of hour-volume df for every word
+    big_graph = st.empty()
     objs = []
     columns = st.columns(3)
     for i, word in enumerate(word_list):
@@ -50,18 +51,28 @@ def twitter_word_pace(word_list):
             objs.append(st.empty())
 
     while True:
-            current_volume_dict = twitter_word_pace_graph_data(word_list)
-            for word, df in all_volumes_dict.items():
-                curr_vol = current_volume_dict[word]["volume"]
-                curr_hour = current_volume_dict[word]["hour"]
-                volume_hour = pd.Series({'volume': curr_vol}, name=curr_hour) #we add volume as value and hour as index
-                df = df.append(volume_hour)
-                all_volumes_dict[word] = df #modify the df in dictionary
-            for i, word in enumerate(word_list):
-                with objs[i].container():
-                    st.subheader(word)
-                    st.line_chart(data=all_volumes_dict[word], width=0, height=0)
-            time.sleep(5)
+        #first lets fetch all data we need for these graphs
+        current_volume_dict = twitter_word_pace_graph_data(word_list)
+        alldfs = []
+        for word, df in all_volumes_dict.items():
+            curr_vol = current_volume_dict[word][word]
+            curr_hour = current_volume_dict[word]["hour"]
+            volume_hour = pd.Series({word: curr_vol}, name=curr_hour) #we add volume as value and hour as index
+            df = df.append(volume_hour)
+            alldfs.append(df.reset_index(drop=True))
+            all_volumes_dict[word] = df #modify the df in dictionary #remove last df so we can add it with index so there will be hours in graph
+        big_df = pd.concat(alldfs, axis=1).set_index(df.index)
+        with big_graph.container():
+            st.subheader("All Words")
+            st.line_chart(data=big_df, width=0, height=0)
+        #lets update the plot with the data we fetched
+        for i, word in enumerate(word_list):
+            with objs[i].container():
+                st.subheader(word)
+                st.line_chart(data=all_volumes_dict[word], width=0, height=0)
+        time.sleep(300)
+
+
 
 
 

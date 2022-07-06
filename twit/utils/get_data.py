@@ -113,7 +113,7 @@ def get_tweet_speed(word: str, is_hashtag: bool = False) -> float:
     if len(date_list) > 1:
         oldest_date = date_list[0]
         newest_date = date_list[-1]
-        td = newest_date - oldest_date
+        td = datetime.now() - oldest_date
         #todo check sec amount if true
         speed = tweets_amount / (td.total_seconds()/60/60)
         return speed
@@ -133,7 +133,7 @@ def twitter_word_pace_graph_data(word_list):
     for i, word in enumerate(word_list):
         volume = get_tweet_speed(word)
         hour = datetime.now().strftime("%H:%M:%S")
-        volume_dict[word] = {"hour" : hour, "volume" : volume}
+        volume_dict[word] = {"hour" : hour, word : volume}
     return volume_dict
 
 def create_word_speed_dict(word_list: list) -> dict:

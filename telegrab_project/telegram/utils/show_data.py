@@ -73,7 +73,6 @@ def telegram_words_plot(word_date_amount_dict: dict):
     ax.set_ylabel('מופעים'[::-1], size=30)
     ax.set_xlabel('תאריך'[::-1], size=30)
     ax.set_title(f"הופעות מילים בקבוצות טלגרם לפי תאריך"[::-1], size=40)
-
     handles, labels = plt.gca().get_legend_handles_labels() # get handles and labels for legend order
     order = [element[0] for element in sorted(final_amounts_list, key=lambda tup: tup[1])][::-1] # specify order of items in legend
     ax.legend([handles[i] for i in order], [labels[i] for i in order], bbox_to_anchor=(1,1), loc="upper left", fontsize=20) # add legend to plot
