@@ -6,15 +6,16 @@ import time
 import streamlit as st
 from common import *
 from telegrab_project import telegram_words_plot, count_words_in_messages, PATH_TO_ALL_MESSAGES, CHANNELS, get_messages, \
-    add_channel, get_channels_list, reset_channels, add_word, reset_words, get_tele_word_list
-from twit import fetch_trending, LEBANON_WOEID, get_tweet_speed
-
+    add_channel, get_channels_list, reset_channels, add_tele_word, reset_tele_words, get_tele_word_list, add_twit_word, \
+    reset_twit_words, get_twit_word_list
+from twit import fetch_trending, LEBANON_WOEID, get_tweet_speed, twitter_word_pace_graph_data
+import pandas as pd
 
 def config_page():
     st.set_page_config(
         page_title="prototype dashboard",
         page_icon="🪖",
-        # layout="wide",
+        layout="wide",
     )
     st.title("Real-Time Data  Dashboard")
 
@@ -23,7 +24,7 @@ def sidebar_select():
     with st.sidebar:
         selection1 = st.radio(
             "Select a social network: ",
-            ("Telegram", "Twitter", "Facebook", "TikTok")
+            ("Telegram", "Twitter")
         )
         return selection1
 
@@ -34,20 +35,36 @@ def add_word_search():
 
 
 def twitter_graph():
-    word = st.session_state.search_word
-    word_list = WORD_LIST + [word]
-    fetch_trending(word_list, place_woeid=LEBANON_WOEID, word=word)
+    fetch_trending(place_woeid=LEBANON_WOEID)
 
 
-def twitter_word_pace():
-    word = st.session_state.search_word
-    volume_list = []
-    with st.empty():
-        while True:
-            volume = get_tweet_speed(word)
-            volume_list.append(volume)
-            st.line_chart(data=volume_list, width=0, height=0, use_container_width=True)
-            time.sleep(1)
+
+
+def twitter_word_pace(word_list):
+    all_volumes_dict = {word : pd.DataFrame({'volume': [] }) for word in word_list} #dictionary of hour-volume df for every word
+    objs = []
+    columns = st.columns(3)
+    for i, word in enumerate(word_list):
+        col = i % 3
+        with columns[col]:
+            objs.append(st.empty())
+
+    while True:
+            current_volume_dict = twitter_word_pace_graph_data(word_list)
+            for word, df in all_volumes_dict.items():
+                curr_vol = current_volume_dict[word]["volume"]
+                curr_hour = current_volume_dict[word]["hour"]
+                volume_hour = pd.Series({'volume': curr_vol}, name=curr_hour) #we add volume as value and hour as index
+                df = df.append(volume_hour)
+                all_volumes_dict[word] = df #modify the df in dictionary
+            for i, word in enumerate(word_list):
+                with objs[i].container():
+                    st.subheader(word)
+                    st.line_chart(data=all_volumes_dict[word], width=0, height=0)
+            time.sleep(5)
+
+
+
 
 
 def telegram_graph(word_list, date_range):
@@ -77,11 +94,26 @@ def telegram_words():
     with col2:
         st.button(label="reset telegram words", key="reset_tele_words")
     if st.session_state.add_word_button and st.session_state.new_word:
-        add_word(st.session_state.new_word)
+        add_tele_word(st.session_state.new_word)
     if st.session_state.reset_tele_words:
-        reset_words()
+        reset_tele_words()
     st.write("current words:")
     st.write(" \n".join(["* "+word for word in get_tele_word_list()]))
+
+
+def twitter_words():
+    st.text_input("Add word: ", key="new_word")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.button(label="add_word", key="add_word_button")
+    with col2:
+        st.button(label="reset twitter words", key="reset_twit_words")
+    if st.session_state.add_word_button and st.session_state.new_word:
+        add_twit_word(st.session_state.new_word)
+    if st.session_state.reset_twit_words:
+        reset_twit_words()
+    st.write("current words:")
+    st.write(" \n".join(["* "+word for word in get_twit_word_list()]))
 
 
 def telegram_dates():
@@ -97,21 +129,28 @@ def full_page():
     config_page()
     selection1 = sidebar_select()
     if selection1 == "Twitter":
-        add_word_search()
-        st.write("most trending hashtags graph")
-        twitter_graph()
-        st.write("tweets per hour graph")
-        if st.session_state.search_word:
-            twitter_word_pace()
+        twit_selection2 = st.sidebar.radio(
+            "Select a option: ",
+            ("Trending Now", "Live Word Graph")
+        )
+        if twit_selection2 == "Trending Now":
+            st.subheader("Most Trending Hashtags Graph")
+            twitter_graph()
+        if twit_selection2 == "Live Word Graph":
+            twitter_words()
+            st.button(label="Plot Graphs", key="twit_plot_graphs_button")
+            if st.session_state.twit_plot_graphs_button:
+                twit_word_list = get_twit_word_list()
+                twitter_word_pace(twit_word_list)
 
     elif selection1 == "Telegram":
-        selection2 = st.sidebar.radio(
+        tele_selection2 = st.sidebar.radio(
             "Select a option: ",
             ("add channels", "graph")
         )
-        if selection2 == "add channels":
+        if tele_selection2 == "add channels":
             telegram_channels()
-        if selection2 == "graph":
+        if tele_selection2 == "graph":
             telegram_words()
             date_range = telegram_dates()
             st.button(label="plot graph", key="plot_graph_button")
@@ -119,9 +158,3 @@ def full_page():
                 tele_word_list = get_tele_word_list()
                 telegram_graph(word_list=tele_word_list, date_range=date_range)
 
-
-    elif selection1 == "Facebook":
-        st.write("coming soon...")
-
-    elif selection1 == "TikTok":
-        st.write("coming soon...")

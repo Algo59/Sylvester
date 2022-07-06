@@ -2,7 +2,7 @@ from telethon.sync import TelegramClient
 from datetime import datetime, timedelta
 import re
 from telethon.tl.functions.messages import GetHistoryRequest
-from common import WORD_LIST, COMBINATIONS, PATH_TO_CHANNELS, PATH_TO_TELE_WORDS
+from common import WORD_LIST, COMBINATIONS, PATH_TO_CHANNELS, PATH_TO_TELE_WORDS, PATH_TO_TWIT_WORDS
 from telegrab_project.telegram.config import *
 import json
 import pickle
@@ -72,8 +72,7 @@ def count_words_in_messages(all_messages_dict: dict, word_list: list, date_range
     return word_date_amount_dict
 
 
-
-
+#channels func
 def save_channels_list(channel_list):
     with open(PATH_TO_CHANNELS, "wb") as f:
         pickle.dump(channel_list, f)
@@ -99,6 +98,7 @@ def reset_channels():
     save_channels_list(CHANNELS)
 
 
+# telegram words funcs
 def save_tele_word_list(word_list):
     with open(PATH_TO_TELE_WORDS, "wb") as f:
         pickle.dump(word_list, f)
@@ -114,11 +114,39 @@ def get_tele_word_list():
         return []
 
 
-def add_word(word):
+def add_tele_word(word):
     word_list = get_tele_word_list()
     word_list.append(word)
     save_tele_word_list(word_list)
 
 
-def reset_words():
+def reset_tele_words():
     save_tele_word_list([])
+
+
+# twitter words funcs
+def save_twit_word_list(word_list):
+    with open(PATH_TO_TWIT_WORDS, "wb") as f:
+        pickle.dump(word_list, f)
+
+
+
+def get_twit_word_list():
+    try:
+        with open(PATH_TO_TWIT_WORDS, "rb") as f:
+            word_list = pickle.load(f)
+            return word_list
+    except FileNotFoundError:
+        return []
+
+
+def add_twit_word(word):
+    word_list = get_twit_word_list()
+    word_list.append(word)
+    save_twit_word_list(word_list)
+
+
+def reset_twit_words():
+    save_twit_word_list([])
+
+

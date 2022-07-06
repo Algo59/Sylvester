@@ -45,6 +45,7 @@ def spline(x_values: list, y_values: list):
     y_smooth = spl(x_smooth)
     return x_smooth, y_smooth
 
+
 def telegram_words_plot(word_date_amount_dict: dict):
     wdad_trans = {TOPICS.get(key, key): word_date_amount_dict.get(key, "error") for key in word_date_amount_dict}
     # date_today = datetime.now().strftime("%d-%m-%Y")
@@ -71,7 +72,7 @@ def telegram_words_plot(word_date_amount_dict: dict):
     #set topics
     ax.set_ylabel('מופעים'[::-1], size=30)
     ax.set_xlabel('תאריך'[::-1], size=30)
-    ax.set_title(f"הופעות מילים בלבנון לפי תאריך"[::-1], size=40)
+    ax.set_title(f"הופעות מילים בקבוצות טלגרם לפי תאריך"[::-1], size=40)
 
     handles, labels = plt.gca().get_legend_handles_labels() # get handles and labels for legend order
     order = [element[0] for element in sorted(final_amounts_list, key=lambda tup: tup[1])][::-1] # specify order of items in legend

@@ -68,10 +68,9 @@ def print_tweets(json_response: dict):
         print(f"text = {tweet['text']} \n\n")
 
 
-def fetch_trending(word_list: list, place_woeid: int, word: str) -> None:
+def fetch_trending(place_woeid: int) -> None:
     """
     check if one of the words in wordlist is trending in place
-    :param word_list: list of suspicios words
     :param place_woeid: get from web the place woeid
     :return: none but sends to me in telegrab_project the trending graph and alert if one of the words is trending
     """
@@ -90,7 +89,7 @@ def fetch_trending(word_list: list, place_woeid: int, word: str) -> None:
         #         text = f"ALERT: \n {TOPICS[word]} is trending in {place_woeid} as '{trend['name']}' in volume of {trend['tweet_volume']}" \
         #                f"the last 24 hours (check time is {res['as_of']})"
         #         # send_message(to="me", text="Good morning, here are the trends for today:")
-    graph_path = trend_bar_graph(trendict, word=word)
+    graph_path = trend_bar_graph(trendict)
     # send_file(to="me", path=graph_path)
 
 
@@ -121,6 +120,21 @@ def get_tweet_speed(word: str, is_hashtag: bool = False) -> float:
     else:
         return 0
 
+
+def twitter_word_pace_graph_data(word_list):
+    """
+    Description:
+    get the data for one frame all words you want to show in twiter word-pace graph- that shows the word volume (twits per hour)
+    live.
+    :param word_list: list of words to check volume
+    :return: volume_dict: a dictionary of words as keys and dict of hour and volume as values
+    """
+    volume_dict = {word: 0 for word in word_list}
+    for i, word in enumerate(word_list):
+        volume = get_tweet_speed(word)
+        hour = datetime.now().strftime("%H:%M:%S")
+        volume_dict[word] = {"hour" : hour, "volume" : volume}
+    return volume_dict
 
 def create_word_speed_dict(word_list: list) -> dict:
     """
