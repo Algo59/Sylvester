@@ -3,7 +3,7 @@ import json
 from twit.config.get_data import *
 from dateutil import parser
 from .show_data import *
-happened = False
+from datetime import datetime, timezone
 
 def all_tweets_contain_word_url(search_word: str, limit: int, is_hashtag:bool =False) -> str:
     """
@@ -113,7 +113,7 @@ def get_tweet_speed(word: str, is_hashtag: bool = False) -> float:
     if len(date_list) > 1:
         oldest_date = date_list[0]
         newest_date = date_list[-1]
-        td = datetime.now() - oldest_date
+        td = datetime.now(timezone.utc) - oldest_date
         #todo check sec amount if true
         speed = tweets_amount / (td.total_seconds()/60/60)
         return speed
