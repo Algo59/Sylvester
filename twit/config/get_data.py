@@ -1,7 +1,6 @@
 # To set your enviornment variables in your terminal run the following line:
 # export 'BEARER_TOKEN'='<your_bearer_token>'
-BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAABrLbwEAAAAAjtpxBEPr02j6RkRHJPJYjmq1K9s%3Dst6vsfOsIJm0PGxgxGArLdoDHO1sY2FocLzTtjFOFlaEk3X8fc"
-
+BEARER_TOKEN = ""
 LEBANON_WOEID = 23424873
 ISRAEL_WOEID = 23424852
 JAPAN_WOEID = 23424856

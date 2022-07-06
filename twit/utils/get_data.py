@@ -90,7 +90,6 @@ def fetch_trending(place_woeid: int) -> None:
         #                f"the last 24 hours (check time is {res['as_of']})"
         #         # send_message(to="me", text="Good morning, here are the trends for today:")
     graph_path = trend_bar_graph(trendict)
-    # send_file(to="me", path=graph_path)
 
 
 def get_tweet_speed(word: str, is_hashtag: bool = False) -> float:
