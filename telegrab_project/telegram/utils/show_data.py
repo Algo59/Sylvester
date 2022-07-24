@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
+import arabic_reshaper
 from common import TOPICS
 from telegrab_project.telegram.config import *
 import os
@@ -59,7 +59,7 @@ def telegram_words_plot(word_date_amount_dict: dict):
         # if amount_used_sum > 0: #remove words we did not use
         x_values, y_values = wdad_trans[word].keys(), wdad_trans[word].values()
         x_smooth, y_smooth = spline(x_values, y_values)
-        ax.plot(x_smooth, y_smooth, label=str(word)[::-1],linewidth=3)
+        ax.plot(x_smooth, y_smooth, label=arabic_reshaper.reshape(u"{0}".format(str(word)))[::-1],linewidth=3)
         if len(x_values) > 13:
             x_values = [x if i%2==0 else '' for i, x in enumerate(x_values) ]
             plt.xticks(np.arange(len(x_values)), x_values, size=18, rotation=30)  # add half of date ticks to add clearness

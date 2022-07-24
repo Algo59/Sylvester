@@ -6,9 +6,11 @@ import time
 import streamlit as st
 from common import *
 from telegrab_project import telegram_words_plot, count_words_in_messages, PATH_TO_ALL_MESSAGES, CHANNELS, get_messages, \
-    add_channel, get_channels_list, reset_channels, add_tele_word, reset_tele_words, get_tele_word_list, add_twit_word, \
-    reset_twit_words, get_twit_word_list
-from twit import fetch_trending, LEBANON_WOEID, get_tweet_speed, twitter_word_pace_graph_data
+    add_channel, get_channels_list, reset_channels, add_tele_word, reset_tele_words, get_tele_word_list, \
+    remove_tele_word
+
+from twit import fetch_trending, LEBANON_WOEID, get_tweet_speed, twitter_word_pace_graph_data, reset_twit_words, \
+    get_twit_word_list, add_twit_word, remove_twit_word
 import pandas as pd
 
 def config_page():
@@ -70,11 +72,7 @@ def twitter_word_pace(word_list):
             with objs[i].container():
                 st.subheader(word)
                 st.line_chart(data=all_volumes_dict[word], width=0, height=0)
-        time.sleep(300)
-
-
-
-
+        time.sleep(5)
 
 
 
@@ -99,13 +97,17 @@ def telegram_channels():
 
 def telegram_words():
     st.text_input("Add word: ", key="new_word")
-    col1, col2= st.columns(2)
+    col1, col2, col3= st.columns(3)
     with col1:
         st.button(label="add_word", key="add_word_button")
     with col2:
+        st.button(label="remove last word", key="remove_last_tele_word")
+    with col3:
         st.button(label="reset telegram words", key="reset_tele_words")
     if st.session_state.add_word_button and st.session_state.new_word:
         add_tele_word(st.session_state.new_word)
+    if st.session_state.remove_last_tele_word:
+        remove_tele_word()
     if st.session_state.reset_tele_words:
         reset_tele_words()
     st.write("current words:")
@@ -114,13 +116,17 @@ def telegram_words():
 
 def twitter_words():
     st.text_input("Add word: ", key="new_word")
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.button(label="add_word", key="add_word_button")
     with col2:
+        st.button(label="remove last word", key="remove_last_twit_word")
+    with col3:
         st.button(label="reset twitter words", key="reset_twit_words")
     if st.session_state.add_word_button and st.session_state.new_word:
         add_twit_word(st.session_state.new_word)
+    if st.session_state.remove_last_twit_word:
+        remove_twit_word()
     if st.session_state.reset_twit_words:
         reset_twit_words()
     st.write("current words:")

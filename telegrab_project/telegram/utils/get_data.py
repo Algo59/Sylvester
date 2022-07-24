@@ -120,33 +120,15 @@ def add_tele_word(word):
     save_tele_word_list(word_list)
 
 
+def remove_tele_word():
+    word_list = get_tele_word_list()
+    word_list.pop(-1)
+    save_tele_word_list(word_list)
+
+
 def reset_tele_words():
     save_tele_word_list([])
 
 
-# twitter words funcs
-def save_twit_word_list(word_list):
-    with open(PATH_TO_TWIT_WORDS, "wb") as f:
-        pickle.dump(word_list, f)
-
-
-
-def get_twit_word_list():
-    try:
-        with open(PATH_TO_TWIT_WORDS, "rb") as f:
-            word_list = pickle.load(f)
-            return word_list
-    except FileNotFoundError:
-        return []
-
-
-def add_twit_word(word):
-    word_list = get_twit_word_list()
-    word_list.append(word)
-    save_twit_word_list(word_list)
-
-
-def reset_twit_words():
-    save_twit_word_list([])
 
 

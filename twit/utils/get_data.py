@@ -1,5 +1,9 @@
+import pickle
+
 import requests
 import json
+
+from common import PATH_TO_TWIT_WORDS
 from twit.config.get_data import *
 from dateutil import parser
 from .show_data import *
@@ -142,5 +146,37 @@ def create_word_speed_dict(word_list: list) -> dict:
     """
     word_speed_dict = {word : get_tweet_speed(word) for word in word_list}
     return word_speed_dict
+
+
+# twitter words funcs
+def save_twit_word_list(word_list):
+    with open(PATH_TO_TWIT_WORDS, "wb") as f:
+        pickle.dump(word_list, f)
+
+
+
+def get_twit_word_list():
+    try:
+        with open(PATH_TO_TWIT_WORDS, "rb") as f:
+            word_list = pickle.load(f)
+            return word_list
+    except FileNotFoundError:
+        return []
+
+
+def add_twit_word(word):
+    word_list = get_twit_word_list()
+    word_list.append(word)
+    save_twit_word_list(word_list)
+
+
+def remove_twit_word():
+    word_list = get_twit_word_list()
+    word_list.pop(-1)
+    save_twit_word_list(word_list)
+
+
+def reset_twit_words():
+    save_twit_word_list([])
 
 
