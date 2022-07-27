@@ -1,8 +1,11 @@
+import os
+
+import pandas as pd
 from telethon.sync import TelegramClient
 from datetime import datetime, timedelta
 import re
 from telethon.tl.functions.messages import GetHistoryRequest
-from common import WORD_LIST, COMBINATIONS, PATH_TO_CHANNELS, PATH_TO_TELE_WORDS, PATH_TO_TWIT_WORDS
+from common import *
 from telegrab_project.telegram.config import *
 import json
 import pickle
@@ -23,18 +26,25 @@ def save_all_messages(channels):
                     if message.text:
                         date = message.date.strftime("%d/%m/%Y")
                         text = message.text
-                        all_messages[index] = {"text" : text, "date" : date}
+                        all_messages[index] = {"date" : date, "text" : text,  "channel" : channel}
                         index += 1
             except Exception as e:
                 print(channel + "\n " + Exception)
-
-    with open(PATH_TO_ALL_MESSAGES, "w", encoding="utf-8") as all_messages_file:
+    #save json for app
+    with open(PATH_TO_ALL_TELE_MESSAGES, "w", encoding="utf-8") as all_messages_file:
         json.dump(all_messages, all_messages_file, indent=4, ensure_ascii=False)
+    #save excel for data conservation
+    now = datetime.now().strftime("%d_%m_%Y")
+    name_for_save = f"month_back_telegram_messages_as_of_{now}.xlsx"
+    df = pd.DataFrame.from_dict(data=all_messages, orient='index', columns=["date", "text", "channel"])
+    df.to_excel(os.path.join(PATH_TO_TELEGRAM_EXCELS, name_for_save), index=False)
+
+
 
 
 def get_messages():
     try:
-        with open(PATH_TO_ALL_MESSAGES, "r", encoding="utf-8") as dict_file:
+        with open(PATH_TO_ALL_TELE_MESSAGES, "r", encoding="utf-8") as dict_file:
             all_messages_dict = json.load(dict_file)
             return all_messages_dict
     except FileNotFoundError:

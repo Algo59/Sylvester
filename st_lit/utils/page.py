@@ -1,16 +1,19 @@
 import json
 import random
 import string
+import numpy as np
+import matplotlib
 from datetime import datetime, timedelta
 import time
 import streamlit as st
 from common import *
-from telegrab_project import telegram_words_plot, count_words_in_messages, PATH_TO_ALL_MESSAGES, CHANNELS, get_messages, \
+from telegrab_project import telegram_words_plot, count_words_in_messages, CHANNELS, get_messages, \
     add_channel, get_channels_list, reset_channels, add_tele_word, reset_tele_words, get_tele_word_list, \
     remove_tele_word
-
-from twit import fetch_trending, LEBANON_WOEID, get_tweet_speed, twitter_word_pace_graph_data, reset_twit_words, \
-    get_twit_word_list, add_twit_word, remove_twit_word
+from PIL import Image
+from twit import fetch_trending, LEBANON_WOEID, get_word_tweet_speed, twitter_word_pace_graph_data, reset_twit_words, \
+    get_twit_word_list, add_twit_word, remove_twit_word, add_twitter_words_data_row, word_list_big_line_graph, \
+    get_prev_day_twit_data, word_pace_line_graph, get_prev_hour_twit_data
 import pandas as pd
 
 def config_page():
@@ -20,13 +23,21 @@ def config_page():
         layout="wide",
     )
     st.title("Real-Time Data  Dashboard")
+    # lets change default colors
+    matplotlib.rcParams['text.color'] = TEXT_COLOR
+    matplotlib.rcParams['axes.labelcolor'] = TEXT_COLOR
+    matplotlib.rcParams['xtick.color'] = TEXT_COLOR
+    matplotlib.rcParams['ytick.color'] = TEXT_COLOR
+    matplotlib.rcParams['axes.facecolor'] = BACKGROUND_COLOR
+    matplotlib.rcParams['legend.facecolor'] = BACKGROUND_COLOR
+    matplotlib.rcParams['figure.facecolor'] = BACKGROUND_COLOR
 
 
 def sidebar_select():
     with st.sidebar:
         selection1 = st.radio(
             "Select a social network: ",
-            ("Telegram", "Twitter")
+            ("Twitter", "Telegram")
         )
         return selection1
 
@@ -43,7 +54,11 @@ def twitter_graph():
 
 
 def twitter_word_pace(word_list):
-    all_volumes_dict = {word : pd.DataFrame({word: [] }) for word in word_list} #dictionary of hour-volume df for every word
+    """
+    for every word in list check pace every time interval and show all words graphs on dashboard
+    :param word_list: list of words we check pace and show on dashboard
+    :return:
+    """
     big_graph = st.empty()
     objs = []
     columns = st.columns(3)
@@ -51,28 +66,21 @@ def twitter_word_pace(word_list):
         col = i % 3
         with columns[col]:
             objs.append(st.empty())
-
     while True:
-        #first lets fetch all data we need for these graphs
+        # get new data
         current_volume_dict = twitter_word_pace_graph_data(word_list)
-        alldfs = []
-        for word, df in all_volumes_dict.items():
-            curr_vol = current_volume_dict[word][word]
-            curr_hour = current_volume_dict[word]["hour"]
-            volume_hour = pd.Series({word: curr_vol}, name=curr_hour) #we add volume as value and hour as index
-            df = df.append(volume_hour)
-            alldfs.append(df.reset_index(drop=True))
-            all_volumes_dict[word] = df #modify the df in dictionary #remove last df so we can add it with index so there will be hours in graph
-        big_df = pd.concat(alldfs, axis=1).set_index(df.index)
-        with big_graph.container():
-            st.subheader("All Words")
-            st.line_chart(data=big_df, width=0, height=0)
+        add_twitter_words_data_row(current_volume_dict)  # save to knowledge
+        # get 24 hour and 1 hour data
+        day_data_df = get_prev_day_twit_data()
+        hour_data_df = get_prev_hour_twit_data()
         #lets update the plot with the data we fetched
-        for i, word in enumerate(word_list):
+        with big_graph.container(): #update big graph
+            fig = word_list_big_line_graph(data_df=day_data_df, word_list=word_list)
+            st.pyplot(fig=fig)
+        for i, word in enumerate(word_list): #update small graphs
             with objs[i].container():
-                st.subheader(word)
-                st.line_chart(data=all_volumes_dict[word], width=0, height=0)
-        time.sleep(5)
+                st.pyplot(word_pace_line_graph(data_df=hour_data_df,word=word, index=i))
+        time.sleep(10*60)
 
 
 
@@ -148,21 +156,21 @@ def full_page():
     if selection1 == "Twitter":
         twit_selection2 = st.sidebar.radio(
             "Select a option: ",
-            ("Trending Now", "Live Word Graph")
+            ("Live Word Graph", "Trending Now")
         )
-        if twit_selection2 == "Trending Now":
-            st.subheader("Most Trending Hashtags Graph")
-            twitter_graph()
         if twit_selection2 == "Live Word Graph":
             twitter_words()
             st.button(label="Plot Graphs", key="twit_plot_graphs_button")
             if st.session_state.twit_plot_graphs_button:
                 twit_word_list = get_twit_word_list()
                 twitter_word_pace(twit_word_list)
+        if twit_selection2 == "Trending Now":
+            st.subheader("Most Trending Hashtags Graph")
+            twitter_graph()
 
     elif selection1 == "Telegram":
         tele_selection2 = st.sidebar.radio(
-            "Select a option: ",
+            "Select an option: ",
             ("add channels", "graph")
         )
         if tele_selection2 == "add channels":

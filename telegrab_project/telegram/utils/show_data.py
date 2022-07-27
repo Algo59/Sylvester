@@ -1,12 +1,13 @@
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 import arabic_reshaper
-from common import TOPICS
+from common import *
 from telegrab_project.telegram.config import *
 import os
 from scipy.interpolate import make_interp_spline, BSpline
 import streamlit as st
-
+from bidi.algorithm import get_display
 
 def pie(amount_dict_hebrew):
     labels = [word[::-1] for word in amount_dict_hebrew.keys()]
@@ -47,10 +48,18 @@ def spline(x_values: list, y_values: list):
 
 
 def telegram_words_plot(word_date_amount_dict: dict):
+    # lets change default colors
+    matplotlib.rcParams['text.color'] = TEXT_COLOR
+    matplotlib.rcParams['axes.labelcolor'] = TEXT_COLOR
+    matplotlib.rcParams['xtick.color'] = TEXT_COLOR
+    matplotlib.rcParams['ytick.color'] = TEXT_COLOR
+
+
     wdad_trans = {TOPICS.get(key, key): word_date_amount_dict.get(key, "error") for key in word_date_amount_dict}
     # date_today = datetime.now().strftime("%d-%m-%Y")
     # graph_name = f"from_{date_today}.png"
-    fig, ax = plt.subplots()  # Create a figure and an axes.
+    fig, ax = plt.subplots(facecolor=BACKGROUND_COLOR)  # Create a figure and an axes.
+    ax.set_facecolor(BACKGROUND_COLOR)
     final_amounts_list = [] # list of tuples contain index and use-amount-of-word example: (0, 32) (used for later sortby size
     index = 0
 
@@ -59,7 +68,7 @@ def telegram_words_plot(word_date_amount_dict: dict):
         # if amount_used_sum > 0: #remove words we did not use
         x_values, y_values = wdad_trans[word].keys(), wdad_trans[word].values()
         x_smooth, y_smooth = spline(x_values, y_values)
-        ax.plot(x_smooth, y_smooth, label=arabic_reshaper.reshape(u"{0}".format(str(word)))[::-1],linewidth=3)
+        ax.plot(x_smooth, y_smooth, label=get_display(arabic_reshaper.reshape(u"{0}".format(str(word)))),linewidth=3)
         if len(x_values) > 13:
             x_values = [x if i%2==0 else '' for i, x in enumerate(x_values) ]
             plt.xticks(np.arange(len(x_values)), x_values, size=18, rotation=30)  # add half of date ticks to add clearness
@@ -75,10 +84,10 @@ def telegram_words_plot(word_date_amount_dict: dict):
     ax.set_title(f"הופעות מילים בקבוצות טלגרם לפי תאריך"[::-1], size=40)
     handles, labels = plt.gca().get_legend_handles_labels() # get handles and labels for legend order
     order = [element[0] for element in sorted(final_amounts_list, key=lambda tup: tup[1])][::-1] # specify order of items in legend
-    ax.legend([handles[i] for i in order], [labels[i] for i in order], bbox_to_anchor=(1,1), loc="upper left", fontsize=20) # add legend to plot
+    ax.legend([handles[i] for i in order], [labels[i] for i in order], bbox_to_anchor=(1,1), loc="upper left",  facecolor=BACKGROUND_COLOR, fontsize=20) # add legend to plot
     plt.subplots_adjust(right=0.8) #move it a little bit
     fig = plt.gcf()
-    fig.set_size_inches((15, 10), forward=False)
+    fig.set_size_inches((15, 9), forward=False)
     # fig.savefig(os.path.join(DATA_FOLDER_PATH, graph_name), dpi=500, bbox_inches='tight', pad_inches=0.1)
     st.pyplot(fig)
     
