@@ -1,5 +1,5 @@
-/twitter_data/twit_knwoledge.xlsx
-/twitter_data/*.png
+*.xlsx
+*.png
 /telegram_data/all_time_telegram_data/*.xlsx
 /telegram_data/current_telegram_messages.json
 .idea
