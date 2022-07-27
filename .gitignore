@@ -1,4 +1,6 @@
-/twitter_data/
+/twitter_data/twit_knwoledge.xlsx
+/twitter_data/*.png
+/telegram_data/all_time_telegram_data/*.xlsx
+/telegram_data/current_telegram_messages.json
 .idea
-/telegram_data/
 /telegrab_project/algo59.session
