@@ -48,18 +48,19 @@ def spline(x_values: list, y_values: list):
 
 
 def telegram_words_plot(word_date_amount_dict: dict):
-    # lets change default colors
-    matplotlib.rcParams['text.color'] = TEXT_COLOR
-    matplotlib.rcParams['axes.labelcolor'] = TEXT_COLOR
-    matplotlib.rcParams['xtick.color'] = TEXT_COLOR
-    matplotlib.rcParams['ytick.color'] = TEXT_COLOR
-
-
+    """
+    graph of occurences of words in telegram groups in wanted time range
+    :param word_date_amount_dict: all needed data is here: the dict has words as keys and a date-amount dict as values:
+            example: {"my word: {26/3 : 33
+                                 27/3 : 20}
+                      "other word": {26/3 : 5,
+                                    27/3: 0}
+    :return: the fig ready
+    """
     wdad_trans = {TOPICS.get(key, key): word_date_amount_dict.get(key, "error") for key in word_date_amount_dict}
     # date_today = datetime.now().strftime("%d-%m-%Y")
     # graph_name = f"from_{date_today}.png"
-    fig, ax = plt.subplots(facecolor=BACKGROUND_COLOR)  # Create a figure and an axes.
-    ax.set_facecolor(BACKGROUND_COLOR)
+    fig, ax = plt.subplots()  # Create a figure and an axes.
     final_amounts_list = [] # list of tuples contain index and use-amount-of-word example: (0, 32) (used for later sortby size
     index = 0
 
@@ -84,7 +85,7 @@ def telegram_words_plot(word_date_amount_dict: dict):
     ax.set_title(f"הופעות מילים בקבוצות טלגרם לפי תאריך"[::-1], size=40)
     handles, labels = plt.gca().get_legend_handles_labels() # get handles and labels for legend order
     order = [element[0] for element in sorted(final_amounts_list, key=lambda tup: tup[1])][::-1] # specify order of items in legend
-    ax.legend([handles[i] for i in order], [labels[i] for i in order], bbox_to_anchor=(1,1), loc="upper left",  facecolor=BACKGROUND_COLOR, fontsize=20) # add legend to plot
+    ax.legend([handles[i] for i in order], [labels[i] for i in order], bbox_to_anchor=(1,1), loc="upper left", fontsize=20) # add legend to plot
     plt.subplots_adjust(right=0.8) #move it a little bit
     fig = plt.gcf()
     fig.set_size_inches((15, 9), forward=False)
